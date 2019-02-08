@@ -25,6 +25,7 @@ import (
 	"github.com/heptio/ark/pkg/cloudprovider/aws"
 	"github.com/heptio/ark/pkg/cloudprovider/azure"
 	"github.com/heptio/ark/pkg/cloudprovider/gcp"
+	"github.com/heptio/ark/pkg/cloudprovider/openstack"
 	arkdiscovery "github.com/heptio/ark/pkg/discovery"
 	arkplugin "github.com/heptio/ark/pkg/plugin"
 	"github.com/heptio/ark/pkg/restore"
@@ -47,6 +48,7 @@ func NewCommand(f client.Factory) *cobra.Command {
 				RegisterBlockStore("aws", newAwsBlockStore).
 				RegisterBlockStore("azure", newAzureBlockStore).
 				RegisterBlockStore("gcp", newGcpBlockStore).
+				RegisterBlockStore("openstack", newOpenstackBlockStore).
 				RegisterBackupItemAction("pv", newPVBackupItemAction).
 				RegisterBackupItemAction("pod", newPodBackupItemAction).
 				RegisterBackupItemAction("serviceaccount", newServiceAccountBackupItemAction(f)).
@@ -84,6 +86,10 @@ func newAzureBlockStore(logger logrus.FieldLogger) (interface{}, error) {
 
 func newGcpBlockStore(logger logrus.FieldLogger) (interface{}, error) {
 	return gcp.NewBlockStore(logger), nil
+}
+
+func newOpenstackBlockStore(logger logrus.FieldLogger) (interface{}, error) {
+	return openstack.NewBlockStore(logger), nil
 }
 
 func newPVBackupItemAction(logger logrus.FieldLogger) (interface{}, error) {
