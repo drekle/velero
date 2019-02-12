@@ -176,7 +176,6 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -189,9 +188,11 @@
     "openstack/objectstorage/v1/accounts",
     "openstack/objectstorage/v1/objects",
     "openstack/utils",
-    "pagination"
+    "pagination",
+    "testhelper",
+    "testhelper/client"
   ]
-  revision = "157cc5982e45ac35bc5e9ba06f138895c127303f"
+  revision = "f29afc2cceca860199ee88cd355a4d0a37b3fad2"
 
 [[projects]]
   branch = "master"
@@ -825,6 +826,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ebce5b4159cb942591b2597feee4c1a929b6647905b756aef71100f67bca5e0a"
+  inputs-digest = "005b13dd0ef03dba388c10efae4a2d668b18ee0b60985e97f9cf428affc8a302"
   solver-name = "gps-cdcl"
   solver-version = 1

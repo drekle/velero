@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -27,10 +28,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/heptio/ark/pkg/cloudprovider"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
+
+	"github.com/heptio/ark/pkg/cloudprovider"
 )
 
 // bucketWriter wraps the GCP SDK functions for accessing object store so they can be faked for testing.
@@ -48,9 +49,8 @@ func (w *writer) getWriteCloser(bucket, key string) io.WriteCloser {
 }
 
 type objectStore struct {
-	client  *gophercloud.ServiceClient
-	project string
-	log     logrus.FieldLogger
+	client *gophercloud.ServiceClient
+	log    logrus.FieldLogger
 }
 
 func NewObjectStore(logger logrus.FieldLogger) cloudprovider.ObjectStore {
@@ -65,7 +65,7 @@ func (o *objectStore) Init(config map[string]string) error {
 
 	region := getRegion()
 
-	client, err := openstack.NewBlockStorageV2(pc, gophercloud.EndpointOpts{
+	client, err := openstack.NewObjectStorageV1(pc, gophercloud.EndpointOpts{
 		Type:   "object-store",
 		Region: region,
 	})
@@ -96,22 +96,27 @@ func (o *objectStore) ListCommonPrefixes(bucket, prefix, delimiter string) ([]st
 	opts := objects.ListOpts{
 		Prefix:    prefix,
 		Delimiter: delimiter,
+		Full:      true,
 	}
 	var objNames []string
-	err := objects.List(o.client, bucket, opts).EachPage(func(page pagination.Page) (bool, error) {
-		var objList []objects.Object
+	pager := objects.List(o.client, bucket, opts)
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		if objPage, ok := page.(objects.ObjectPage); ok {
+			empty, _ := objPage.IsEmpty()
+			if empty {
+				return true, nil
+			}
+			var objList []objects.Object
 			err := objPage.ExtractInto(&objList)
 			if err != nil {
 				return false, err
 			}
-			for _, obj := range objList {
-				objNames = append(objNames, obj.Name)
+			for _, object := range objList {
+				objNames = append(objNames, object.Name)
 			}
-		} else {
-			return false, fmt.Errorf("Page was not an instance of ObjectPage")
+			return true, nil
 		}
-		return true, nil
+		return false, fmt.Errorf("Page not instance of objectPage")
 	})
 	if err != nil {
 		return []string{}, err
@@ -120,7 +125,7 @@ func (o *objectStore) ListCommonPrefixes(bucket, prefix, delimiter string) ([]st
 }
 
 func (o *objectStore) ListObjects(bucket, prefix string) ([]string, error) {
-	return o.ListCommonPrefixes(bucket, prefix, "")
+	return o.ListCommonPrefixes(bucket, prefix, "/")
 }
 
 func (o *objectStore) DeleteObject(bucket, key string) error {

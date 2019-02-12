@@ -18,11 +18,12 @@ package openstack
 
 import (
 	"crypto/tls"
+	"net/http"
+	"os"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/pkg/errors"
-	"net/http"
-	"os"
 )
 
 func getRegion() string {

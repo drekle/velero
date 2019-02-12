@@ -31,9 +31,8 @@ import (
 )
 
 type blockStore struct {
-	client  *gophercloud.ServiceClient
-	project string
-	log     logrus.FieldLogger
+	client *gophercloud.ServiceClient
+	log    logrus.FieldLogger
 }
 
 func NewBlockStore(logger logrus.FieldLogger) cloudprovider.BlockStore {
@@ -105,8 +104,8 @@ func (b *blockStore) CreateSnapshot(volumeID, volumeAZ string, tags map[string]s
 		VolumeID: volumeID,
 		Name:     snapshotName,
 		Metadata: tags,
+		Force:    true, //Force the snapshotting of inuse objects
 	}
-	// TODO: Do some check before really call openstack API on the input
 
 	snap, err := snapshots.Create(b.client, opts).Extract()
 	if err != nil {

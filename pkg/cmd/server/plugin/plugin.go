@@ -45,6 +45,7 @@ func NewCommand(f client.Factory) *cobra.Command {
 				RegisterObjectStore("aws", newAwsObjectStore).
 				RegisterObjectStore("azure", newAzureObjectStore).
 				RegisterObjectStore("gcp", newGcpObjectStore).
+				RegisterObjectStore("openstack", newOpenstackObjectStore).
 				RegisterBlockStore("aws", newAwsBlockStore).
 				RegisterBlockStore("azure", newAzureBlockStore).
 				RegisterBlockStore("gcp", newGcpBlockStore).
@@ -74,6 +75,10 @@ func newAzureObjectStore(logger logrus.FieldLogger) (interface{}, error) {
 
 func newGcpObjectStore(logger logrus.FieldLogger) (interface{}, error) {
 	return gcp.NewObjectStore(logger), nil
+}
+
+func newOpenstackObjectStore(logger logrus.FieldLogger) (interface{}, error) {
+	return openstack.NewObjectStore(logger), nil
 }
 
 func newAwsBlockStore(logger logrus.FieldLogger) (interface{}, error) {
